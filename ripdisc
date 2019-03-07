@@ -1,27 +1,20 @@
 #!/bin/bash
+
+SAVE_PATH="$HOME/ISOs/"
+
 echo "Press Ctrl+C to stop the script"
 eject
-while :
-do
-  echo "Please insert disc"
-  disc=2
-  
-  while [[ $disc != 0 ]]
-  do
-    sudo blkid /dev/sr0 >> /dev/null
-    disc=$?
-    sleep 5 
-  done
-  
-  name=$(sudo blkid /dev/sr0 | cut -d= -f3 | cut -d'"' -f2)
-  output=$(echo $name | sed -e 's/ /_/g')
-  echo "Disc Found: $name"
-  echo "Outputting to: $output.iso"
-
-  # Set save path here
-  dd if=/dev/sr0 | pv | dd of=~/ISOs/$output.iso
-
-  echo "Finished! Insert your next disc"
-  eject
-  sleep 10
+while true; do
+    echo "Please insert disc"
+    until sudo blkid /dev/sr0 >/dev/null; do
+        sleep 5
+    done
+    name=$(sudo blkid /dev/sr0 | cut -d= -f3 | cut -d'"' -f2)
+    output=$(echo $name | sed -e 's/ /_/g')
+    echo "Disc Found: $name"
+    echo "Outputting to: $output.iso"
+    dd if=/dev/sr0 | pv | dd of="${SAVE_PATH}/${output}.iso"
+    echo "Finished! Insert your next disc"
+    eject
+    sleep 10
 done
